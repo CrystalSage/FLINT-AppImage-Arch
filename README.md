@@ -4,32 +4,45 @@
 
 The README is for those who want to build the AppImage again, but for those who just want to use it, the instructions are:
  
-1. Download the AppImage: `wget https://github.com/ankitaS11/AppImageDataForFlint/raw/main/FLINT-2c65c58-x86_64.AppImage`
-2. Make it executable: `chmod +x FLINT-2c65c58-x86_64.AppImage`
-3. Run it: `./FLINT-2c65c58-x86_64.AppImage`
+1. Download the AppImage: `wget https://github.com/CrystalSage/FLINT-AppImage-Arch/raw/main/FLINT-f6125df-x86_64.AppImage`
+2. Make it executable: `chmod +x FLINT-f6125df-x86_64.AppImage`
+3. Run it: `./FLINT-f6125df-x86_64.AppImage`
+
+
+## Building the appimage
+Run the `AppImage_FLINT_Build.sh` script. After executing, the AppImage should be available in the `build` folder. 
+
+The steps below describe the script in brief.
 
 ## Install required dependencies
 
 ```bash
-# Install Boost
-sudo apt-get install libboost-all-dev
+sudo pacman -Syyu base-devel fuse2 openssl cmake sqlite boost unixodbc pcre
+```
 
-# Build Turtle from source
-git clone git@github.com:mat007/turtle.git && cd turtle
-mkdir -p build && cd build
-cmake .. && make -j$nproc && sudo make install
+## Install turtle
+```bash
+build_turtle() {
+	cd $WORKDIR
+	git clone https://www.github.com/mat007/turtle.git 
+	mkdir turtle/build
+	cd turtle/build
+	cmake .. 
+	make 
+	sudo make install
+}
+```
 
-# Install unixODBC
-wget http://www.unixodbc.org/unixODBC-2.3.11.tar.gz && gunzip unixODBC-2.3.11.tar.gz && tar xvf unixODBC*.tar
-cd unixODBC-2.3.11 && ./configure && make -j$nproc && sudo make install
-
-# Install sqlite3
-sudo apt install libsqlite3-dev
-
-# Install POCO
-wget https://github.com/pocoproject/poco/archive/refs/tags/poco-1.11.1-release.tar.gz && tar xvf poco-*.tar.gz
-cd poco-* && mkdir cmake-build && cd cmake-build
-cmake -DCMAKE_BUILD_TYPE=RELEASE -DPOCO_UNBUNDLED=ON \
+## Install POCO
+```bash
+build_poco() {
+	cd $WORKDIR
+	wget https://github.com/pocoproject/poco/archive/refs/tags/poco-1.11.1-release.tar.gz 
+	tar xvf poco-*.tar.gz
+	cd poco-*-release
+	mkdir cmake-build
+	cd cmake-build
+	cmake -DCMAKE_BUILD_TYPE=RELEASE -DPOCO_UNBUNDLED=ON \
         -DENABLE_JSON=ON \
         -DENABLE_DATA=ON \
         -DENABLE_DATA_ODBC=ON \
@@ -51,44 +64,52 @@ cmake -DCMAKE_BUILD_TYPE=RELEASE -DPOCO_UNBUNDLED=ON \
         -DENABLE_ZIP=OFF \
         -DENABLE_PAGECOMPILER=OFF \
         -DENABLE_PAGECOMPILER_FILE2PAGE=OFF ..
-make -j$nproc && sudo make install
+	make 
+	sudo make install
+}
 ```
 
 ## Installing FLINT
 
 ```bash
-git clone git@github.com:moja-global/FLINT.git && cd FLINT/Source
-mkdir build && cd build
-cmake .. && make -j$nproc && make install DESTDIR=AppDir
+build_flint(){
+	cd $WORKDIR
+	# This should be changed to moja-global/FLINT.git once PR 119 is merged.
+	git clone https://www.github.com/ankitaS11/FLINT.git
+	cd FLINT 
+	git checkout fix_poco_include
+	mkdir Source/build
+	cd Source/build
+	cmake ..
+	make
+	make install DESTDIR=AppDir
+}
 ```
 
 ## Setting up system for AppImage building
 
 ```bash
-# Install linuxdeploy
-wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-
-chmod +x linuxdeploy-x86_64.AppImage
-
-# Make sure you are in the build folder of the FLINT/Source/
-# This command will fail first
-./linuxdeploy-x86_64.AppImage --appdir AppDir
+get_linuxdeploy(){
+	cd $WORKDIR/FLINT/Source/build/
+	wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+	chmod +x linuxdeploy-x86_64.AppImage
+	cd $WORKDIR/FLINT/Source/build/ && ./linuxdeploy-x86_64.AppImage --appdir AppDir || true
+}
 ```
 
-Set up the desktop settings: (icons, etc.)
+## Build the appimage
 
 ```bash
-# Copy the files from the GitHub repository:
-git clone git@github.com:ankitaS11/AppImageDataForFlint.git && cd AppImageDataForFlint
-
-cp icon.png ~/Downloads/FLINT/Source/build/AppDir/
-cp usr/share/applications/AppDir.desktop ~/Downloads/FLINT/Source/build/AppDir/usr/share/applications/
-cp ~/Downloads/FLINT/Source/build/bin/* AppDir/usr/bin/
+build_appimage() {
+	# Copy the files from the GitHub repository:
+	cd $WORKDIR/FLINT/Source/build
+	git clone https://www.github.com/ankitaS11/AppImageDataForFlint.git
+	cd AppImageDataForFlint
+	cp icon.png $WORKDIR/FLINT/Source/build/AppDir
+	cp usr/share/applications/AppDir.desktop $WORKDIR/FLINT/Source/build/AppDir/usr/share/applications/
+	cd $WORKDIR/FLINT/Source/build
+	cp bin/* AppDir/usr/bin/
+	./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage -i AppDir/icon.png
+	mv $WORKDIR/FLINT/Source/build/FLINT-*-x86_64.AppImage $WORKDIR
+}
 ```
-
-Build the AppImage:
-
-```bash
-./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage -i AppDir/icon.png
-```
-
