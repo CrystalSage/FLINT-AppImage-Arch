@@ -7,14 +7,14 @@ sudo apt -y update && sudo apt -y upgrade
 sudo apt -y install build-essential
 sudo apt -y install libfuse2
 
-WORKDIR=/home/$USER/Downloads
+WORKDIR=/home/runner/tmp
 mkdir -p $WORKDIR
 
 # Remove existing versions of CMake (if any)
 sudo apt purge cmake
 
 # CMake needs OpenSSL (1.1.1o is the preferred versionas of June 2022)
-wget https://www.openssl.org/source/openssl-1.1.1o.tar.gz && \
+wget --no-check-certificate https://www.openssl.org/source/openssl-1.1.1o.tar.gz && \
 	tar -xvf openssl-1.1.1o.tar.gz && \
 	cd openssl-1.1.1o && \
 	./config && \
@@ -22,7 +22,7 @@ wget https://www.openssl.org/source/openssl-1.1.1o.tar.gz && \
 	sudo make install
 
 # Install latest CMake version - sudo apt install cmake is outdated!!
-wget https://github.com/Kitware/CMake/releases/download/v3.24.0-rc1/cmake-3.24.0-rc1.tar.gz && \
+wget --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.24.0-rc1/cmake-3.24.0-rc1.tar.gz && \
 	tar -xvf cmake-3.24.0-rc1.tar.gz && \
 	cd cmake-3.24.0-rc1 && ./bootstrap && make && sudo make install
 
@@ -36,7 +36,7 @@ sudo apt-get -y install libboost-all-dev
 cd $WORKDIR && git clone https://www.github.com/mat007/turtle.git && cd turtle && mkdir -p build && cd build && cmake .. && make && sudo make install
 
 # Install unixODBC
-cd $WORKDIR && wget http://www.unixodbc.org/unixODBC-2.3.11.tar.gz && gunzip unixODBC-2.3.11.tar.gz && tar xvf unixODBC*.tar
+cd $WORKDIR && wget --no-check-certificate http://www.unixodbc.org/unixODBC-2.3.11.tar.gz && gunzip unixODBC-2.3.11.tar.gz && tar xvf unixODBC*.tar
 cd $WORKDIR && cd unixODBC-2.3.11 && ./configure && make && sudo make install
 
 # Install sqlite3
@@ -44,7 +44,7 @@ sudo apt -y install libsqlite3-dev
 sudo apt -y install libpcre3-dev
 
 # Install POCO
-cd $WORKDIR && wget https://github.com/pocoproject/poco/archive/refs/tags/poco-1.11.1-release.tar.gz && tar xvf poco-*.tar.gz
+cd $WORKDIR && wget --no-check-certificate https://github.com/pocoproject/poco/archive/refs/tags/poco-1.11.1-release.tar.gz && tar xvf poco-*.tar.gz
 
 cd $WORKDIR && cd poco-poco-1.11.1-release && mkdir -p cmake-build && cd cmake-build && \
 	cmake -DCMAKE_BUILD_TYPE=RELEASE -DPOCO_UNBUNDLED=ON \
