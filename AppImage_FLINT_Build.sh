@@ -3,6 +3,13 @@
 # This script is to faciliate building an AppImage for the FLINT repository
 # The AppImage built using this script has been, so far, tested on Ubuntu 22.04 derivatives.
 
+
+function test_script() {
+	echo "HEY"
+}
+
+test_script
+
 sudo apt -y update && sudo apt -y upgrade
 sudo apt -y install build-essential
 sudo apt -y install libfuse2
@@ -22,9 +29,10 @@ wget --no-check-certificate https://www.openssl.org/source/openssl-1.1.1o.tar.gz
 	sudo make install
 
 # Install latest CMake version - sudo apt install cmake is outdated!!
-wget --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.24.0-rc1/cmake-3.24.0-rc1.tar.gz && \
-	tar -xvf cmake-3.24.0-rc1.tar.gz && \
-	cd cmake-3.24.0-rc1 && ./bootstrap && make && sudo make install
+cmake_latest=$(curl https://api.github.com/repos/kitware/cmake/releases/latest | jq -r .tag_name | cut -d 'v' -f2)
+wget --no-check-certificate https://github.com/Kitware/CMake/releases/download/v$cmake_latest/$cmake_latest.tar.gz && \
+	tar -xvf $cmake_latest.tar.gz && \
+	cd $cmake_latest && ./bootstrap && make && sudo make install
 
 # Install SQLite3
 sudo apt-get -y install libsqlite3-dev libsqlite3-0 sqlite3
